@@ -1,0 +1,861 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <link rel="stylesheet" href="styles.css" />
+  <title>CS180 - Project 1</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+    }
+  </style>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width">
+  <title>Table template</title>
+  <link href="minimal-table.css" rel="stylesheet" type="text/css">
+</head>
+<body>
+  <h1>Project 2: Fun with Filters and Frequencies</h1>
+  <h2>Part 1: Fun with Filters</h2>
+  <h3>Part 1.1: Convolutions from Scratch</h3>
+
+  <p>
+    I implemented convolution code using numpy. The four loop version
+    iterates both dimensions of both the image and the kernel. The two
+    loop version iterates on both dimensions of the kernel. The code for
+    the four and two loop versions is shown below:
+  </p>
+
+  <pre><code>
+def pad(img, row_border, col_border):
+  padded = np.zeros((img.shape[0]+2*row_border, img.shape[1]+2*col_border))
+  x, y = padded.shape
+  padded[row_border:row_border+img.shape[0], 
+      col_border:col_border+img.shape[1]] = img
+  return padded
+
+# kernel flipping for convolution
+def flip(kernel):
+  return kernel[::-1, ::-1]
+
+# expects 2D kernel. If 1D, broadcast the input
+def four_loop_conv(img, kernel):
+  row_border, col_border = kernel.shape[0] // 2, kernel.shape[1] // 2
+  padded = pad(img, row_border, col_border)
+  conv_kernel = flip(kernel)
+  output = np.zeros(img.shape)
+  for i in range(img.shape[0]):
+    for j in range(img.shape[1]):
+      total = 0.0
+      for k in range(conv_kernel.shape[0]):
+        for l in range(conv_kernel.shape[1]):
+          total += conv_kernel[k, l] * padded[i+k, j+l]
+      output[i, j] = total
+  return output
+
+def two_loop_conv(img, kernel):
+  row_border, col_border = kernel.shape[0] // 2, kernel.shape[1] // 2
+  padded = pad(img, row_border, col_border)
+  conv_kernel = flip(kernel)
+  output = np.zeros(img.shape)
+  for k in range(conv_kernel.shape[0]):
+    for l in range(conv_kernel.shape[1]):
+      output += conv_kernel[k, l] * padded[k:k+img.shape[0], l:l+img.shape[1]]
+  return output
+  </code></pre>
+
+  <p>
+    I ran these functions, as well as scipy.signal.convolve2d, on a 4032 x 3024 size image
+    with a 9x9 box filter and the finite difference operators. The table below shows the runtimes.
+  </p>
+
+  <Table>
+    <tr>
+      <td>Function</td>
+      <td>Kernel</td>
+      <td>Time (seconds to the nearest hundredth)</td>
+    </tr>
+
+    <tr>
+      <td>Four loop convolution</td>
+      <td>9x9 box filter</td>
+      <td>165.58</td>
+    </tr>
+
+    <tr>
+      <td>Two loop convolution</td>
+      <td>9x9 box filter</td>
+      <td>1.22</td>
+    </tr>
+
+    <tr>
+      <td>scipy.signal.convolve2d</td>
+      <td>9x9 box filter</td>
+      <td>1.32</td>
+    </tr>
+
+    <tr>
+      <td>Four loop convolution</td>
+      <td>Dx</td>
+      <td>9.60</td>
+    </tr>
+
+    <tr>
+      <td>Two loop convolution</td>
+      <td>Dx</td>
+      <td>0.08</td>
+    </tr>
+
+    <tr>
+      <td>scipy.signal.convolve2d</td>
+      <td>Dx</td>
+      <td>0.10</td>
+    </tr>
+
+    <tr>
+      <td>Four loop convolution</td>
+      <td>Dy</td>
+      <td>11.11</td>
+    </tr>
+
+    <tr>
+      <td>Two loop convolution</td>
+      <td>Dy</td>
+      <td>0.07</td>
+    </tr>
+
+    <tr>
+      <td>scipy.signal.convolve2d</td>
+      <td>Dy</td>
+      <td>0.13</td>
+    </tr>
+  </Table>
+
+  <p>
+    For scipy.signal.convolve2d, I used mode="same" to get the boundaries to be handled
+    in a manner where the output of the convolution is the same size as the input. My 
+    two and four loop convolution functions also handle boundaries this way.
+
+    The two-loop and scipy functions were much faster than the four loop convolution. This
+    is likely due to those functions spending less time in python and allowing for more
+    lower level optimizations.
+  </p>
+
+  <h3>Part 1.2: Finite Difference Operator</h3>
+
+  <p>
+    Here are the partial derivative and gradient magnitude images for the cameraman image.
+    Note that all images have been automatically contrasted in the same way
+    as the previous part. The threshold for binarizing the gradient image is
+    based on the original gradient magnitudes, not the normalized values.
+  </p>
+
+  <Table>
+    <tr>
+      <td> Image Type </td>
+      <td> Image </td>
+    </tr>
+
+    <tr>
+      <td> Dx filter </td>
+      <td> <img
+        src="results/cameraman_dx.png"
+        alt="Cameraman dx"
+        width="500"
+      > </td>
+    </tr>
+
+    <tr>
+      <td> Dy filter </td>
+      <td> <img
+        src="results/cameraman_dy.png"
+        alt="Cameraman dy"
+        width="500"
+      > </td>
+    </tr>
+
+    <tr>
+      <td> Gradient Magnitude </td>
+      <td> <img
+        src="results/cameraman_gradients.png"
+        alt="Cameraman Gradients"
+        width="500"
+      > </td>
+    </tr>
+
+    <tr>
+      <td> Binarized Gradients (threshold = 0.3) </td>
+      <td> <img
+        src="results/cameraman_binarized.png"
+        alt="Cameraman Gradients Binarized"
+        width="500"
+      > </td>
+    </tr>
+  </Table>
+
+  <p>
+    For the binarized gradient magnitude image, I chose a threshold of 0.3. I tested
+    a lot of different thresholds and found that this value removes most of the noise from
+    the grass at the bottom of the image while still maintaining most of the outline of
+    the cameraman and a significant amount of the bridge in the background. I found that
+    smaller thresholds included too much noise from the grass, while larger thresholds
+    excluded significant parts of the cameraman's outline and most of the bridge.
+  </p>
+
+  <h3>Part 1.3: Derivative of Gaussian (DoG) Filter</h3>
+
+  <p>
+    Here are the partial derivative and gradient magnitude images for the cameraman image
+    after applying a 3x3 gaussian filter with standard deviation 1.
+    Note that all images have been automatically contrasted in the same way
+    as the previous part. The threshold for binarizing the gradient image is
+    based on the original gradient magnitudes, not the normalized values.
+  </p>
+
+  <Table>
+    <tr>
+      <td> Image Type </td>
+      <td> Image </td>
+    </tr>
+
+    <tr>
+      <td> Dx filter </td>
+      <td> <img
+        src="results/cameraman_gaussian_dx.png"
+        alt="Cameraman Gaussian dx"
+        width="500"
+      > </td>
+    </tr>
+
+    <tr>
+      <td> Dy filter </td>
+      <td> <img
+        src="results/cameraman_gaussian_dy.png"
+        alt="Cameraman Gaussian dy"
+        width="500"
+      > </td>
+    </tr>
+
+    <tr>
+      <td> Gradient Magnitude </td>
+      <td> <img
+        src="results/cameraman_gaussian_gradients.png"
+        alt="Cameraman Gaussian Gradients"
+        width="500"
+      > </td>
+    </tr>
+
+    <tr>
+      <td> Binarized Gradients (threshold = 0.21) </td>
+      <td> <img
+        src="results/cameraman_gaussian_binarized.png"
+        alt="Cameraman Gausian Gradients Binarized"
+        width="500"
+      > </td>
+    </tr>
+  </Table>
+
+  <p>
+    The images from the difference and gradient operators contain much smoother edges
+    and less noise. Notably, I was able to use a lower threshold for the binarized
+    gradient image, and it still has less noise when compared to the binarized
+    gradient image from 1.2.
+
+    <br>
+
+    I also convolved the finite different filters with the gaussian filter to create
+    a filter that can do the finite difference and gaussian convolutions with one
+    convolution operation. Notably, mode on scipy.signal.convolve2d had to be set to "full"
+    in order for associativity of convolution to apply. I checked the new kernels were
+    guaranteed to give the same result as doing two convolutions
+    by comparing the l2 distance of using a single
+    convolution with the new kernel versus two convolutions with the previous kernels.
+  </p>
+  
+  <h2>Part 2: Fun with Frequencies</h2>
+
+  <h3>Part 2.1: Image "Sharpening"</h3>
+
+  <p>
+    Here are the results of applying a low pass and high pass filter to the Taj
+    Mahal image. The high pass filter was computed by subtracting the Gaussian (low pass)
+    filter from the unit impulse (identity) filter. 
+    The unsharp mask filter was computed by adding the unit impulse (identity) filter 
+    to the high pass filter, with the values on the high pass filter scaled by
+    parameter α.
+    Results of applying the unsharp mask filter at various magnitudes are also shown.
+  </p>
+
+  <Table>
+    <tr>
+      <td> Image Type </td>
+      <td> Image </td>
+    </tr>
+
+    <tr>
+      <td> Original </td>
+      <td> <img
+        src="data/taj.jpg"
+        alt="Taj Mahal Original"
+        width="500"
+      > </td>
+    </tr>
+
+    <tr>
+      <td> Low Pass Filter (Gaussian Kernel) </td>
+      <td> <img
+        src="results/taj_low_freq.jpg"
+        alt="Taj Mahal Low Frequency"
+        width="500"
+      > </td>
+    </tr>
+
+    <tr>
+      <td> High Pass Filter (Original - Low Pass, image is contrasted) </td>
+      <td> <img
+        src="results/taj_high_freq.jpg"
+        alt="Taj Mahal High Frequencies"
+        width="500"
+      > </td>
+    </tr>
+
+    <tr>
+      <td> Image with Unsharp Filter (α = 2) </td>
+      <td> <img
+        src="results/taj_sharp_2.jpg"
+        alt="Taj Mahal α = 2"
+        width="500"
+      > </td>
+    </tr>
+
+    <tr>
+      <td> Image with Unsharp Filter (α = 10) </td>
+      <td> <img
+        src="results/taj_sharp_10.jpg"
+        alt="Taj Mahal α = 10"
+        width="500"
+      > </td>
+    </tr>
+  </Table>
+
+  <p>
+  With α=2, the edges of the image look sharper. With a higher value like
+  α=10, a significant amount of noise is visible.
+
+  <br>
+  
+  I also ran the same filters over an image of Berkeley, as shown below.
+  </p>
+
+  <Table>
+    <tr>
+      <td> Image Type </td>
+      <td> Image </td>
+    </tr>
+
+    <tr>
+      <td> Original </td>
+      <td> <img
+        src="data/campanile.jpg"
+        alt="Berkeley Original"
+        width="500"
+      > </td>
+    </tr>
+
+    <tr>
+      <td> Low Pass Filter (Gaussian Kernel) </td>
+      <td> <img
+        src="results/camp_low_freq.jpg"
+        alt="Berkeley Low Frequency"
+        width="500"
+      > </td>
+    </tr>
+
+    <tr>
+      <td> High Pass Filter (Original - Low Pass, image is contrasted) </td>
+      <td> <img
+        src="results/camp_high_freq.jpg"
+        alt="Berkeley High Frequencies"
+        width="500"
+      > </td>
+    </tr>
+
+    <tr>
+      <td> Image with Unsharp Filter (α = 2) </td>
+      <td> <img
+        src="results/camp_sharp_2.jpg"
+        alt="Berkeley α = 2"
+        width="500"
+      > </td>
+    </tr>
+
+    <tr>
+      <td> Image with Unsharp Filter (α = 10) </td>
+      <td> <img
+        src="results/camp_sharp_10.jpg"
+        alt="Bereley α = 10"
+        width="500"
+      > </td>
+    </tr>
+  </Table>
+
+  Reesults on the running the filters on the image of Berkeley were similar to the 
+  results from running them on the Taj Mahal image. Since the original image was
+  of a larger size, and the size of the low pass (Gaussian) filter was the same, the
+  low pass filter has a less noticeable effect on the image. That being said, signficant
+  noise is visible (especially on the Campanile) when α=10, while there is little difference
+  between the α=2 and original image due to the weaker effect of the low and high frequency
+  filters on a larger image.
+
+  <h3>Part 2.2: Hybrid Images</h3>
+
+  <p>
+    To implement hybrid images, I first aligned images using the image aliging function
+    provided. Based on two points select on each image, the algorithm attempts to resize
+    and rotate one image so that the two points on each image are at the same positions 
+    after alignment. I chose points that would be analogous to each other on both images.
+    Afterwards, if there is significant unused region, I would crop it out of the images.
+    For instance, the original images of Derek and Nutemg and their aligned 
+    and cropped versions are
+    shown below.
+  </p>
+
+  <Table>
+    <tr>
+      <td> Setting </td>
+      <td> Derek </td>
+      <td> Nutmeg </td>
+    </tr>
+
+    <tr>
+      <td> Original Images </td>
+      <td> <img
+        src="data/DerekPicture.jpg"
+        alt="Derek Original"
+        width="500"
+      > </td>
+      <td> <img
+        src="data/nutmeg.jpg"
+        alt="Nutmeg Original"
+        width="500"
+      > </td>
+    </tr>
+
+    <tr>
+      <td> Aligned and Cropped Images </td>
+      <td> <img
+        src="results/derek_align.jpg"
+        alt="Derek Aligned"
+        width="500"
+      > </td>
+      <td> <img
+        src="results/cat_align.jpg"
+        alt="Nutmeg Aligned"
+        width="500"
+      > </td>
+    </tr>
+  </Table>
+
+  <p>
+    Aftewards, I would run a low pass filter on one image (Derek in this case),
+    and a high pass filter over the other (Nutmeg in this case). The
+    hybrid image would be the average of the two images (by arithmetic mean).
+  </p>
+
+  <Table>
+    <tr>
+      <td> Derek (49x49 kernel, σ=16.0) </td>
+      <td> Nutmeg (49x49 kernel, σ=4.0) </td>
+      <td> Hybrid Image </td>
+    </tr>
+
+    <tr>
+      <td> <img
+        src="results/derek_low.jpg"
+        alt="Derek Low Frequency"
+        width="300"
+      > </td>
+      <td> <img
+        src="results/cat_high.jpg"
+        alt="Nutmeg High Frequency"
+        width="300"
+      > </td>
+      <td> <img
+        src="results/cat_hybrid.jpg"
+        alt="Hybrid Image"
+        width="300"
+      > </td>
+    </tr>
+  </Table>
+
+  <p>
+    I chose the cutoff frequencies (choices for σ) based on manual inspection.
+    I found that I typically used a lower cutoff frequency for the high frequecy
+    image so that it would be less visible from a distance. I chose a higher cutoff
+    frequency for the low frequency image to make the image less noticeable when
+    viewed from up close.
+
+    <br>
+
+    I also took the fourier transforms of the images above.
+  </p>
+
+  <Table>
+    <tr>
+      <td> Derek (49x49 kernel, σ=16.0) </td>
+      <td> Nutmeg (49x49 kernel, σ=4.0) </td>
+      <td> Hybrid Image </td>
+    </tr>
+
+    <tr>
+      <td> <img
+        src="results/fft_derek.jpg"
+        alt="Derek FFT"
+        width="300"
+      > </td>
+      <td> <img
+        src="results/fft_cat.jpg"
+        alt="Nutmeg FFT"
+        width="300"
+      > </td>
+      <td> <img
+        src="results/fft_hybrid.jpg"
+        alt="Hybrid Image FFT"
+        width="300"
+      > </td>
+    </tr>
+  </Table>
+
+  <p>
+    The low frequency image in the fourier domain has higher intensity near the origin,
+    whereas the high frequency image in the fourier domain has higher intensity some
+    distance away from the origin. The hybrid image in the fourier domain is the average
+    of the other two images in the fourier domain.
+
+    <br>
+
+    For these images specifically, the high frequency image (Nutmeg the cat)
+    in the fourier domain has noticeable diagonal lines. This is likely due to
+    Nutmeg's whisker's being diagonal, creating high frequencies in those diagonal directions.
+
+    <br>
+
+    The results of the hybrid image procedure on other images is shown below. The top row
+    (baseball and basketball) was done with a 49x49 kernel, while the bottom row (two trees)
+    was done with a 25x25 kernel.
+
+  <Table>
+    <tr>
+      <td> Original Low Frequency Image (σ = 16.0) </td>
+      <td> Original High Frequency Image (σ = 4.0) </td>
+      <td> Hybrid Image </td>
+    </tr>
+
+    <tr>
+      <td> <img
+        src="data/baseball.jpg"
+        alt="Baseball"
+        width="300"
+      > </td>
+      <td> <img
+        src="data/basketball.jpg"
+        alt="Basketball"
+        width="300"
+      > </td>
+      <td> <img
+        src="results/hybrid_ball.jpg"
+        alt="Ball Hybrid Image"
+        width="300"
+      > </td>
+    </tr>
+
+    <tr>
+      <td> <img
+        src="data/summer.jpg"
+        alt="Tree with Leaves"
+        width="300"
+      > </td>
+      <td> <img
+        src="data/winter.jpg"
+        alt="Tree with no Leaves"
+        width="300"
+      > </td>
+      <td> <img
+        src="results/hybrid_trees.jpg"
+        alt="Tree Hybrid Image"
+        width="300"
+      > </td>
+    </tr>
+  </Table>
+  </p>
+
+  <h3>Part 2.3: Gaussian and Laplacian Stacks</h3>
+
+  <p>
+    When blending images, it may be desirable to mask features of the individual images
+    at different frequences based on the frequencies of those images. For instance, with
+    an apple and orange, the general colors (red and orange) should be blended smoothly
+    at low frequency, but higher frequency features, like the texture on the orange,
+    are masked with a sharper filter to prevent those features from showing up on the apple.
+
+    <br>
+
+    A figure visualizing the Laplacian stacks, multiplied by their
+    mask on the corresponding layer of the Gaussian stack, is shown below. 
+    Images of parts of the Laplacian stack have been contrasted for viewability.
+    <br>
+    The first row
+    shows the first layer of the Laplacian stack - the features of highest frequency.
+    <br>
+    The second row shows layers around the middle of the stack, where features
+    of medium frequency are.
+    <br>
+    The third row shows low frequency features near the end of the Laplacian stack.
+    <br>
+    The last row shows the results of reconstructing the Laplacian stacks after applying
+    the Gaussian stack of the mask.
+  </p>
+
+  <Table>
+    <tr>
+      <td> Stack Layer (lower number is higher frequency) </td>
+      <td> Apple </td>
+      <td> Orange </td>
+      <td> Hybrid Image </td>
+    </tr>
+
+    <tr>
+      <td> Layer 0 (Highest Frequency) </td>
+      <td> <img
+        src="results/apple_stack_0.jpg"
+        alt="Apple Layer 0"
+        width="300"
+      > </td>
+      <td> <img
+        src="results/orange_stack_0.jpg"
+        alt="Orange Layer 0"
+        width="300"
+      > </td>
+      <td> <img
+        src="results/oraple_stack_0.jpg"
+        alt="Combined Layer 0"
+        width="300"
+      > </td>
+    </tr>
+
+    <tr>
+      <td> Layer 4 (Medium Frequency) </td>
+      <td> <img
+        src="results/apple_stack_4.jpg"
+        alt="Apple Layer 4"
+        width="300"
+      > </td>
+      <td> <img
+        src="results/orange_stack_4.jpg"
+        alt="Orange Layer 4"
+        width="300"
+      > </td>
+      <td> <img
+        src="results/oraple_stack_4.jpg"
+        alt="Combined Layer 4"
+        width="300"
+      > </td>
+    </tr>
+
+    <tr>
+      <td> Layer 8 (Low Frequency) </td>
+      <td> <img
+        src="results/apple_stack_8.jpg"
+        alt="Apple Layer 8"
+        width="300"
+      > </td>
+      <td> <img
+        src="results/orange_stack_8.jpg"
+        alt="Orange Layer 8"
+        width="300"
+      > </td>
+      <td> <img
+        src="results/oraple_stack_8.jpg"
+        alt="Combined Layer 8"
+        width="300"
+      > </td>
+    </tr>
+
+    <tr>
+      <td> Layers Combined </td>
+      <td> <img
+        src="results/apple_stack_full.jpg"
+        alt="Apple Layers Combined"
+        width="300"
+      > </td>
+      <td> <img
+        src="results/orange_stack_full.jpg"
+        alt="Orange Layers Combined"
+        width="300"
+      > </td>
+      <td> <img
+        src="results/oraple_stack_full.jpg"
+        alt="Combined Layers Combined"
+        width="300"
+      > </td>
+    </tr>
+  </Table>
+
+  <p> 
+    The bottom right image in the table above is the final result of image blending.
+  </p>
+
+  <h3>Part 2.4: Multiresolution Blending</h3>
+
+  <p> Here are results of blending images together. These involve
+    image blending with irregular masks. Those masks were made
+    by taking an image of a circle, and resizing and cropping that image.
+  </p>
+
+  <Table>
+    <tr>
+      <td> Original Image 1 </td>
+      <td> Original Image 2 </td>
+      <td> Mask </td>
+      <td> Hybrid Image </td>
+    </tr>
+
+    <tr>
+      <td> <img
+        src="data/mouse.jpg"
+        alt="Mouse"
+        width="200"
+      > </td>
+      <td> <img
+        src="data/computer.jpg"
+        alt="Computer"
+        width="200"
+      > </td>
+      <td> <img
+        src="results/mouse_mask.jpg"
+        alt="Mask"
+        width="200"
+      > </td>
+      <td> <img
+        src="results/mouse_full.jpg"
+        alt="Computer and Mouse"
+        width="200"
+      > </td>
+    </tr>
+
+    <tr>
+      <td> <img
+        src="data/summer.jpg"
+        alt="Tree with Leaves"
+        width="200"
+      > </td>
+      <td> <img
+        src="data/winter.jpg"
+        alt="Tree without Leaves"
+        width="200"
+      > </td>
+      <td> <img
+        src="results/tree_mask.jpg"
+        alt="Mask"
+        width="200"
+      > </td>
+      <td> <img
+        src="results/tree_stack_full.jpg"
+        alt="Trees Combined"
+        width="200"
+      > </td>
+    </tr>
+  </Table>
+
+  <p>
+    I have visualized the process of blending the tree images below,
+    similar to the oraple image.
+  </p>
+
+  <Table>
+    <tr>
+      <td> Stack Layer </td>
+      <td> Tree with Leaves </td>
+      <td> Tree without Leaves </td>
+      <td> Hybrid Image </td>
+    </tr>
+
+    <tr>
+      <td> Layer 0 (Highest Frequency) </td>
+      <td> <img
+        src="results/summer_stack_0.jpg"
+        alt="Summer Tree Layer 0"
+        width="300"
+      > </td>
+      <td> <img
+        src="results/winter_stack_0.jpg"
+        alt="Winter Tree Layer 0"
+        width="300"
+      > </td>
+      <td> <img
+        src="results/tree_stack_0.jpg"
+        alt="Combined Layer 0"
+        width="300"
+      > </td>
+    </tr>
+
+    <tr>
+      <td> Layer 4 (Medium Frequency) </td>
+      <td> <img
+        src="results/summer_stack_4.jpg"
+        alt="Summer Tree Layer 4"
+        width="300"
+      > </td>
+      <td> <img
+        src="results/winter_stack_4.jpg"
+        alt="Winter Tree Layer 4"
+        width="300"
+      > </td>
+      <td> <img
+        src="results/tree_stack_4.jpg"
+        alt="Combined Layer 4"
+        width="300"
+      > </td>
+    </tr>
+
+    <tr>
+      <td> Layer 8 (Low Frequency) </td>
+      <td> <img
+        src="results/summer_stack_8.jpg"
+        alt="Summer Tree Layer 8"
+        width="300"
+      > </td>
+      <td> <img
+        src="results/winter_stack_8.jpg"
+        alt="Winter Tree Layer 8"
+        width="300"
+      > </td>
+      <td> <img
+        src="results/tree_stack_8.jpg"
+        alt="Combined Layer 8"
+        width="300"
+      > </td>
+    </tr>
+
+    <tr>
+      <td> Layers Combined </td>
+      <td> <img
+        src="results/summer_stack_full.jpg"
+        alt="Summer Tree Layers Combined"
+        width="300"
+      > </td>
+      <td> <img
+        src="results/winter_stack_full.jpg"
+        alt="Winter Tree Layers Combined"
+        width="300"
+      > </td>
+      <td> <img
+        src="results/tree_stack_full.jpg"
+        alt="Combined Layers Combined"
+        width="300"
+      > </td>
+    </tr>
+  </Table>
+
+</body>
+</html>
