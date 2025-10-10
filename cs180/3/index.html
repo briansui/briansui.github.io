@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <link rel="stylesheet" href="styles.css" />
+  <title>CS180 - Project 3</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+    }
+  </style>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width">
+  <title>Table template</title>
+  <link href="minimal-table.css" rel="stylesheet" type="text/css">
+  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+  <script id="MathJax-script" async
+    src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">
+  </script>
+</head>
+<body>
+  <h1>Project 3: [Auto]Stitching Photo Mosaics</h1>
+
+  <h2>A: Image Warping and Mosaicing</h2>
+
+  <h3>A.1: Shoot the Pictures</h3>
+  I shot the following pairs of pictures.
+
+  <br>
+
+  <div style="text-align: center;">
+    <img
+      src="data/soda_3.jpg"
+      alt="Soda"
+      width="500"
+    >
+    <img
+      src="data/soda_4.jpg"
+      alt="Soda"
+      width="500"
+    >
+
+    <br>
+
+    <img
+      src="data/glade_3.jpg"
+      alt="Glade"
+      width="500"
+    >
+    <img
+      src="data/glade_2.jpg"
+      alt="Glade"
+      width="500"
+    >
+
+    <br>
+
+    <img
+      src="data/library_2.jpg"
+      alt="Library"
+      width="500"
+    >
+    <img
+      src="data/library_4.jpg"
+      alt="Library"
+      width="500"
+    >
+  </div>
+
+  <h3>A.2: Recover Homographies</h3>
+  I used the correspondence tool linked on the 
+  <a href="https://cal-cs180.github.io/fa23/hw/proj3/tool.html">course website</a>
+  to manually label correspondences between the images.
+
+  <div style="text-align: center;">
+    <img
+      src="results/soda_3_labeled.jpg"
+      alt="Soda"
+      width="500"
+    >
+    <img
+      src="results/soda_4_labeled.jpg"
+      alt="Soda"
+      width="500"
+    >
+
+    <br>
+
+    <img
+      src="results/glade_3_labeled.jpg"
+      alt="Glade"
+      width="500"
+    >
+    <img
+      src="results/glade_2_labeled.jpg"
+      alt="Glade"
+      width="500"
+    >
+
+    <br>
+
+    <img
+      src="results/library_2_labeled.jpg"
+      alt="Library"
+      width="500"
+    >
+    <img
+      src="results/library_4_labeled.jpg"
+      alt="Library"
+      width="500"
+    >
+  </div>
+
+  As shown on discussion 5, the standard form of writing a homgraphy matrix,
+  $$p'=Hp$$ or $$\begin{bmatrix}
+    \lambda u \\ \lambda v \\ \lambda
+  \end{bmatrix} = \begin{bmatrix}
+    h_1 & h_2 & h_3 \\
+    h_4 & h_5 & h_6 \\
+    h_7 & h_8 & 1
+  \end{bmatrix} \begin{bmatrix}
+    x \\ y \\ 1
+  \end{bmatrix}
+  $$ can be rewritten as
+  $$
+    \begin{bmatrix}
+      x & y & 1 & 0 & 0 & 0 & -ux & -uy \\
+      0 & 0 & 0 & x & y & 1 & -vx & -vy \\
+    \end{bmatrix} \begin{bmatrix}
+    h_1 \\ h_2 \\ h_3 \\ h_4 \\ h_5 \\ h_6 \\ h_7 \\ h_8
+  \end{bmatrix} = \begin{bmatrix}
+    u \\ v
+  \end{bmatrix}
+  $$
+  Stacking multiple instances of the rows above can create an overdetermined linear system
+  for solving for the vector h, which is solved using least squares regression.
+
+  <br>
+
+  The homography matrices computed for the pairs of images above are as follows:
+  
+  <br>
+
+  First pair (Soda Hall):
+
+  $$
+  \begin{bmatrix}
+    8.41155304e-01 & -1.57081972e-01 & 3.02979154e+02 \\
+    -2.60002942e-02 & 5.21127618e-01 & 2.40647844e+03 \\
+    -1.77894641e-06 & -8.75421406e-05 & 1.00000000e+00 \\
+  \end{bmatrix}
+  $$
+
+  Second pair (Memorial Glade)
+
+  $$
+  \begin{bmatrix}
+    8.33960263e-01 & -2.41094962e-01 & 3.69377944e+02 \\
+    6.66370834e-02 & 4.66716782e-01 & 2.25722525e+03 \\
+    -4.77988095e-07 & -9.37005891e-05 & 1.00000000e+00 \\
+  \end{bmatrix}
+  $$
+
+  Third pair (Doe Library)
+
+  $$
+  \begin{bmatrix}
+    7.23476200e-01 & -4.69043453e-01 & 8.35368887e+02 \\
+    1.92322905e-01 & 2.96754907e-01 & 2.61919785e+03 \\
+    -1.66235471e-05 & -1.10111704e-04 & 1.00000000e+00 \\
+  \end{bmatrix}
+  $$
+
+  <h3> A.3: Warp the Images </h3>
+
+  I implemented warpImageNearestNeighbor(im, H) and warpImageBilinear(im, H), and
+  tested it on the image of a tape box below:
+
+  <br>
+
+  <div style="text-align: center;">
+  <img
+    src="data/tape.jpg"
+    alt="Tape"
+    width="500"
+  >
+  </div>
+
+  I assigned square coordinates ((0, 0), (0, 1000), (1000, 0), (1000, 1000)) to the corners
+  of the box in the image, and performed rectification to get the following images. The image
+  on the left is from nearest neighbors, while the one of the right is from bilinear interpolation.
+
+  <div style="text-align: center;">
+  <img
+    src="results/tape_aligned_nearest.jpg"
+    alt="Tape"
+    width="500"
+  >
+  <img
+    src="results/tape_aligned_bilinear.jpg"
+    alt="Tape"
+    width="500"
+  >
+  </div>
+  I also performed rectification on one of the images in each of the other pairs.
+  The warping of the glade is shown below.
+
+  <div style="text-align: center;">
+  <img
+    src="results/glade_nearest.jpg"
+    alt="Glade"
+    width="500"
+  >
+  <img
+    src="results/glade_bilinear.jpg"
+    alt="Glade"
+    width="500"
+  >
+  </div>
+  The nearest neighbors approach was signficantly faster, even
+  with vectorization, because it required fewer matrix operations
+  to accomplish.
+  
+  <br>
+
+  The nearest neighbors and bilinear interpolation approaches handled
+  values outside of valid area differently due to the implementaiton,
+  but the alpha mask (not shown above) is set to 0 for invalid regions,
+  so after the alpha mask is applied, invalid regions will not have a value.
+
+  <br>
+  Another different between nearest neighbors and bilinear interpolation is
+  that nearest neighbors is more prone to aliasing to the the lower amount of sampling.
+  The images below demonstrate this from a building in the distance of the photo
+  of the glade. The image on the left is from nearest neighbors, while the image
+  on the right is from bilinear interpolation.
+
+  <div style="text-align: center;">
+  <img
+    src="results/nearest_neighbors_zoom.png"
+    alt="Glade"
+    width="500"
+  >
+  <img
+    src="results/bilinear_zoom.png"
+    alt="Glade"
+    width="500"
+  >
+  </div>
+
+  In particular, the pattern on the roof is more consistent from bilinear
+  interpolation compared to nearest neighbors.
+
+  <h3> A.4: Blend the Images into a Mosaic </h3>
+
+  When warping images, I used the homography matrix on the corners of the image to determine
+  the range of coordinates needed to contain the entire warped image. This computation also
+  provides information about where the two images are offset from each other, so they can
+  be aligned by a translation.
+  
+  <br>
+  
+  To create the mosaic, I used a alpha mask that is 1 at the center
+  of the image and linearly goes towards 0 at the edges. Then, I translate the images relative
+  to each other so their corresponding points align, and average them, using their alpha
+  mask values as weights. 
+
+  <br>
+
+  The results of creating mosaics are shown below.
+
+  <div style="text-align: center;">
+  <img
+    src="results/soda_mosaic.jpg"
+    alt="Soda"
+    width="1000"
+  >
+  <br>
+  <img
+    src="results/glade_mosaic.jpg"
+    alt="Glade"
+    width="1000"
+  >
+  <br>
+  <img
+    src="results/library_mosaic.jpg"
+    alt="Library"
+    width="1000"
+  >
+  <br>
+  </div>
+
+  The first pair of images could not align well, and getting certain corresponding
+  points to align caused others to become misaligned. This is likely due to relevant objects
+  (like the pole) being much closer to the camera compared to other images, meaning the
+  fact that the photos did not truly share a point of projection (due to my moving the camera)
+  was more significant for that pair of images.
+</body>
+</html>
