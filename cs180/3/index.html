@@ -237,12 +237,12 @@
 
   <div style="text-align: center;">
   <img
-    src="results/nearest_neighbors_zoom.png"
+    src="other/nearest_neighbors_zoom.png"
     alt="Glade"
     width="500"
   >
   <img
-    src="results/bilinear_zoom.png"
+    src="other/bilinear_zoom.png"
     alt="Glade"
     width="500"
   >
@@ -295,5 +295,190 @@
   (like the pole) being much closer to the camera compared to other images, meaning the
   fact that the photos did not truly share a point of projection (due to my moving the camera)
   was more significant for that pair of images.
+
+  <h2>B: Feature Matching for Autostitching</h2>
+
+  <h3>B.1: Harris Corner Detection</h3>
+
+  <p>
+    I started by using the harris oner detection code given over the grayscale image.
+    I changed the `min_distance`
+    parameter of `peak_local_max` to 20 to get a smaller set of points, since too many points
+    would regularly cause crashes at later steps. An example of an image and many local
+    maxima is shown below. Notably, points cover most of hte image, showing all
+    parts of the image are accounted for.
+  
+
+  <div style="text-align: center;">
+  <img
+    src="results/harris_all.jpg"
+    alt="Library"
+    width="1000"
+  >
+  </div>
+
+  Among these local maxima, the 1000 with highest intensity on the Harris image are:
+  <div style="text-align: center;">
+  <img
+    src="results/harris_1000.jpg"
+    alt="Library"
+    width="1000"
+  >
+  </div>
+
+  I started by using 500 points, and that worked well on 2 out of the 3 pairs
+  of images I had. For the last pair, the pair of images of memorial glade,
+  I found that there were too few correct feature pairs, meaning RANSAC was not
+  able to find any inliers. Raising ANMS to return 1000 points led to improved
+  homography since there were more correct feature pairs present, allowing
+  for RANSAC to find a good homography. For ANMS, I used `c_robust = 0.9`,
+  the value used in the MOPS paper.
+  <br>
+  After running ANMS on the set of points, the 1000 returned were as follows:
+  <div style="text-align: center;">
+  <img
+    src="results/harris_anms.jpg"
+    alt="Library"
+    width="1000"
+  >
+  </div>
+  Notably, the points from ANMS are mostly spaced apart from each other, and
+  include points in most regions of the image.
+  </p>
+
+  <h3>B.2: Feature Descriptor Extraction</h3>
+  <p>
+    For extracting feature descriptors, I first took a 40x40 window around each point
+    from ANMS, then downscaled it by 5 to get an 8x8 feature descriptor. Then,
+    I normalized the descriptor to have a mean of 0 and standard deviation of 1.
+    The feature descritpors were taken in color. Some features from the library image
+    above are shown below. Note that the range of values has been linearly transformed
+    to be in the range [0, 1], but the actual values used for feature matching
+    were not constrained to this range.
+
+    <div style="text-align: center;">
+    <img
+      src="results/library2_feat0.png"
+      alt="Library"
+      width="500"
+    >
+    <img
+      src="results/library2_feat2.png"
+      alt="Library"
+      width="500"
+    >
+    <br>
+    <img
+      src="results/library2_feat3.png"
+      alt="Library"
+      width="500"
+    >
+    <img
+      src="results/library2_feat4.png"
+      alt="Library"
+      width="500"
+    >
+    </div>
+  </p>
+
+  <h3>B.3: Feature Matching</h3>
+  <p>
+    I matched features using Lowe's method of compared nearest and second nearest neighbor.
+    I intially tested a threshold of 0.67, the threshold where the probability densities
+    of incorrect and correct pairs was equal in figure 6b of the MOPS paper. I found
+    that a threshold of 0.5 worked better, since there were too many incorrect pairs
+    from higher thresholds. Pairs of matched features are shown below.
+
+    <div style="text-align: center;">
+    <img
+      src="results/soda_pairs.png"
+      alt="Soda"
+      width="1000"
+    >
+    <br>
+    <img
+      src="results/glade_pairs.png"
+      alt="Glade"
+      width="1000"
+    >
+    <br>
+    <img
+      src="results/library_pairs.png"
+      alt="Library"
+      width="1000"
+    >
+    </div>
+    
+    Note that in the second pair of images, photos of memorial glade, many of the feature
+    pairs found are incorrect. I found that RANSAC can tolerate a large amount of
+    incorrect feature pairs, as long as its epsilon parameter is small enough.
+    <br>
+    Note that in the last pair of images, most feature pairs are not on the ceiling.
+    One likely cause for this is that the patterns on the ceiling are repetitive, so the
+    nearest neighbor and second nearest neighbor for feature descriptors there are
+    likely very similar.
+  </p>
+
+  <h3>B.4: RANSAC for Robust Homography</h3>
+
+  <p>
+  I used RANSAC with 10,000 iterations and epsilon=10 to find homography matrices.
+  Among the pairs of images above with matched features, RANSAC found 7, 3, and 4 inliers
+  respectively for the best Homography found (inliers in this case excludes
+  points used to compute the Homography matrix). As mentioned above, RANSAC on the pair
+  of images of memorial glade failed to find any inliers when ANMS returned 500 points,
+  leading to my decision to increase the number of points chosen by ANMS.
+
+  After using RANSAC to find a homography matrix, I used the steps described in A.3 and
+  A.4 to create mosaics, as shown below:
+
+  <div style="text-align: center;">
+    <img
+      src="results/soda_ransac.jpg"
+      alt="Soda"
+      width="1000"
+    >
+    <br>
+    <img
+      src="results/glade_ransac.jpg"
+      alt="Glade"
+      width="1000"
+    >
+    <br>
+    <img
+      src="results/library_ransac.jpg"
+      alt="Library"
+      width="1000"
+    >
+    </div>
+
+    For reference, here are the mosaics from A.4, made using the manual labeling method:
+    <div style="text-align: center;">
+    <img
+      src="results/soda_mosaic.jpg"
+      alt="Soda"
+      width="1000"
+    >
+    <br>
+    <img
+      src="results/glade_mosaic.jpg"
+      alt="Glade"
+      width="1000"
+    >
+    <br>
+    <img
+      src="results/library_mosaic.jpg"
+      alt="Library"
+      width="1000"
+    >
+    <br>
+    </div>
+    The results from automatic homography are similar to those
+    from the manually labeled points, but are a bit worse. In particular, in the
+    first mosaic, the front pole is more clearly misaligned in the mosaic from
+    automatic homography. In the library, the ceiling is more poorly aligned,
+    likely due to the lack of feature pairs on the ceiling.
+  </p>
+  
 </body>
 </html>
