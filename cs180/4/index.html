@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <link rel="stylesheet" href="styles.css" />
+  <title>CS180 - Project 3</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+    }
+  </style>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width">
+  <title>Table template</title>
+  <link href="minimal-table.css" rel="stylesheet" type="text/css">
+  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+  <script id="MathJax-script" async
+    src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">
+  </script>
+</head>
+<body>
+
+<h2>0: Calibrating Your Camera and Capturing a 3D Scan</h2>
+  After calibration, my frustram visualization looked like the following:
+
+  <br>
+
+  <div style="text-align: center;">
+    <img
+      src="results/render1.png"
+      alt="Render"
+      width="500"
+    >
+    <img
+      src="results/render2.png"
+      alt="Render"
+      width="500"
+    >
+
+  </div>
+
+  <h2>1: Fit a Neural Net to a 2D Image</h2>
+  I started with the model architecture suggested in the project specification:
+  <br>
+  A max coding positional encoding frequency of 10, hidden layer width 10, 4 linear layers,
+  and ReLU activations between linear layers, except for the last activation, which is 
+  a sigmoid.
+
+  The results of training on the fox image are as follows. The images are for after 0, 250,
+  1000, and 3000 batches of size 10,000, respectively.
+  The fifth image is the ground truth image, and the sixth is
+  the PSNR curve.
+
+  <div style="text-align: center;">
+    <img
+      src="results/fox_0.png"
+      alt="Render"
+      width="500"
+    >
+    <img
+      src="results/fox_250.png"
+      alt="Render"
+      width="500"
+    >
+    <br>
+    <img
+      src="results/fox_1000.png"
+      alt="Render"
+      width="500"
+    >
+    <img
+      src="results/fox_3000.png"
+      alt="Render"
+      width="500"
+    >
+    <br>
+    <img
+      src="results/fox_truth.png"
+      alt="Render"
+      width="500"
+    >
+  </div>
+
+  <div style="text-align: center;">
+    <img
+      src="results/tape_0.png"
+      alt="Render"
+      width="500"
+    >
+    <img
+      src="results/tape_250.png"
+      alt="Render"
+      width="500"
+    >
+    <br>
+    <img
+      src="results/tape_1000.png"
+      alt="Render"
+      width="500"
+    >
+    <img
+      src="results/tape_3000.png"
+      alt="Render"
+      width="500"
+    >
+    <br>
+    <img
+      src="results/tape_truth.png"
+      alt="Render"
+      width="500"
+    >
+    <img
+      src="results/PSNR.png"
+      alt="Render"
+      width="500"
+    >
+  </div>
+
+  Notably, the fox image network learned well. It initally had a box filter
+  pattern, but it is less visible after 3000 batches. The frequency is a bit low,
+  so the hair is not shown well by the network.
+
+  For the tape, the main issue was the aruco tag. The corners of the page were
+  learned well, but the aruco tag is likely poorly suited for a neural network.
+
+  I also tried networks with slightly different hyperparameters: one with hidden layer
+  width 128, one with hidden layer width 512, one with a max positional
+  encoding frequency of 5, and one with a max positional encoding frequency of 20.
+
+  <div style="text-align: center;">
+    <img
+      src="results/fox_narrow.png"
+      alt="Render"
+      width="500"
+    >
+    <img
+      src="results/fox_wide.png"
+      alt="Render"
+      width="500"
+    >
+    <br>
+    <img
+      src="results/fox_low.png"
+      alt="Render"
+      width="500"
+    >
+    <img
+      src="results/fox_high.png"
+      alt="Render"
+      width="500"
+    >
+  </div>
+  The network with width 512 performed poorly, and had very high
+  training error.
+
+</body>
+</html>
