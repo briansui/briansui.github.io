@@ -733,5 +733,457 @@ and "a photo of an orange" for high frequencies.
     </figure>
   </div>
 
+<h1>Part B: Flow Matching from Scratch!</h1>
+
+<h1>Part 1: Training a Single-Step Denoising UNet</h1>
+
+<h2>1.2 Using the UNet to Train a Denoiser</h2>
+
+Here are the results of different levels of noise on an image.
+The image used is the first image from the train dataset.
+
+  <div style="text-align: center;">
+
+    <figure style="display: inline-block; text-align: center; margin: 0 10px;">
+      <img src="B/results/1.2a.png" width="150" alt="Campanile">
+      <figcaption>&sigma;=0.0</figcaption>
+    </figure>
+
+    <figure style="display: inline-block; text-align: center; margin: 0 10px;">
+      <img src="B/results/1.2b.png" width="150" alt="Campanile">
+      <figcaption>&sigma;=0.2</figcaption>
+    </figure>
+
+    <figure style="display: inline-block; text-align: center; margin: 0 10px;">
+      <img src="B/results/1.2c.png" width="150" alt="Campanile">
+      <figcaption>&sigma;=0.4</figcaption>
+    </figure>
+
+    <figure style="display: inline-block; text-align: center; margin: 0 10px;">
+      <img src="B/results/1.2d.png" width="150" alt="Campanile">
+      <figcaption>&sigma;=0.5</figcaption>
+    </figure>
+
+    <figure style="display: inline-block; text-align: center; margin: 0 10px;">
+      <img src="B/results/1.2e.png" width="150" alt="Campanile">
+      <figcaption>&sigma;=0.6</figcaption>
+    </figure>
+
+    <figure style="display: inline-block; text-align: center; margin: 0 10px;">
+      <img src="B/results/1.2f.png" width="150" alt="Campanile">
+      <figcaption>&sigma;=0.8</figcaption>
+    </figure>
+
+    <figure style="display: inline-block; text-align: center; margin: 0 10px;">
+      <img src="B/results/1.2g.png" width="150" alt="Campanile">
+      <figcaption>&sigma;=1.0</figcaption>
+    </figure>
+  </div>
+
+<h3>1.2.1 Training</h3>
+The training loss from the unconditioned unet is shown below:
+  <div style="text-align: center;">
+    <figure style="display: inline-block; text-align: center; margin: 0 10px;">
+      <img src="B/results/1.2.1plot.png" width="1000" alt="Campanile">
+      <figcaption>Training Loss Over 5 Epochs</figcaption>
+    </figure>
+  </div>
+
+I then used the model to denoise images from the test set. The following
+are the results from denoising with the model after training for 1 epoch:
+
+<div style="text-align: center;">
+  <figure style="display: inline-block; text-align: center; margin: 0 10px;">
+    <img src="B/results/1.2.1a1.png" width="300" alt="Campanile">
+    <figcaption>Original Image</figcaption>
+  </figure>
+
+  <figure style="display: inline-block; text-align: center; margin: 0 10px;">
+    <img src="B/results/1.2.1a2.png" width="300" alt="Campanile">
+    <figcaption>&sigma;=0.5</figcaption>
+  </figure>
+
+  <figure style="display: inline-block; text-align: center; margin: 0 10px;">
+    <img src="B/results/1.2.1a3.png" width="300" alt="Campanile">
+    <figcaption>Denoised</figcaption>
+  </figure>
+
+  <br>
+
+  <figure style="display: inline-block; text-align: center; margin: 0 10px;">
+    <img src="B/results/1.2.1b1.png" width="300" alt="Campanile">
+    <figcaption>Original Image</figcaption>
+  </figure>
+
+  <figure style="display: inline-block; text-align: center; margin: 0 10px;">
+    <img src="B/results/1.2.1b2.png" width="300" alt="Campanile">
+    <figcaption>&sigma;=0.5</figcaption>
+  </figure>
+
+  <figure style="display: inline-block; text-align: center; margin: 0 10px;">
+    <img src="B/results/1.2.1b3.png" width="300" alt="Campanile">
+    <figcaption>Denoised</figcaption>
+  </figure>
+
+  <br>
+
+  <figure style="display: inline-block; text-align: center; margin: 0 10px;">
+    <img src="B/results/1.2.1c1.png" width="300" alt="Campanile">
+    <figcaption>Original Image</figcaption>
+  </figure>
+
+  <figure style="display: inline-block; text-align: center; margin: 0 10px;">
+    <img src="B/results/1.2.1c2.png" width="300" alt="Campanile">
+    <figcaption>&sigma;=0.5</figcaption>
+  </figure>
+
+  <figure style="display: inline-block; text-align: center; margin: 0 10px;">
+    <img src="B/results/1.2.1c3.png" width="300" alt="Campanile">
+    <figcaption>Denoised</figcaption>
+  </figure>
+</div>
+
+The following are the results from denoising after training for 5 epochs
+(these are the same input images from the test set as above):
+
+<div style="text-align: center;">
+  <figure style="display: inline-block; text-align: center; margin: 0 10px;">
+    <img src="B/results/1.2.1d1.png" width="300" alt="Campanile">
+    <figcaption>Original Image</figcaption>
+  </figure>
+
+  <figure style="display: inline-block; text-align: center; margin: 0 10px;">
+    <img src="B/results/1.2.1d2.png" width="300" alt="Campanile">
+    <figcaption>&sigma;=0.5</figcaption>
+  </figure>
+
+  <figure style="display: inline-block; text-align: center; margin: 0 10px;">
+    <img src="B/results/1.2.1d3.png" width="300" alt="Campanile">
+    <figcaption>Denoised</figcaption>
+  </figure>
+
+  <br>
+
+  <figure style="display: inline-block; text-align: center; margin: 0 10px;">
+    <img src="B/results/1.2.1e1.png" width="300" alt="Campanile">
+    <figcaption>Original Image</figcaption>
+  </figure>
+
+  <figure style="display: inline-block; text-align: center; margin: 0 10px;">
+    <img src="B/results/1.2.1e2.png" width="300" alt="Campanile">
+    <figcaption>&sigma;=0.5</figcaption>
+  </figure>
+
+  <figure style="display: inline-block; text-align: center; margin: 0 10px;">
+    <img src="B/results/1.2.1e3.png" width="300" alt="Campanile">
+    <figcaption>Denoised</figcaption>
+  </figure>
+
+  <br>
+
+  <figure style="display: inline-block; text-align: center; margin: 0 10px;">
+    <img src="B/results/1.2.1f1.png" width="300" alt="Campanile">
+    <figcaption>Original Image</figcaption>
+  </figure>
+
+  <figure style="display: inline-block; text-align: center; margin: 0 10px;">
+    <img src="B/results/1.2.1f2.png" width="300" alt="Campanile">
+    <figcaption>&sigma;=0.5</figcaption>
+  </figure>
+
+  <figure style="display: inline-block; text-align: center; margin: 0 10px;">
+    <img src="B/results/1.2.1f3.png" width="300" alt="Campanile">
+    <figcaption>Denoised</figcaption>
+  </figure>
+</div>
+
+<h3>1.2.2 Out-of-Distribution Testing</h3>
+For the first image of the test set, I've applied varying noise levels,
+and denoised it with a model trained on noise with &sigma;=0.5.
+Note the original image is the same as when &sigma;=0.0. The
+results are as follows:
+
+<div style="text-align: center;">
+
+  <figure style="display: inline-block; text-align: center; margin: 0 10px;">
+    <img src="B/results/1.2.2a1.png" width="150" alt="Campanile">
+    <figcaption>&sigma;=0.0</figcaption>
+  </figure>
+
+  <figure style="display: inline-block; text-align: center; margin: 0 10px;">
+    <img src="B/results/1.2.2b1.png" width="150" alt="Campanile">
+    <figcaption>&sigma;=0.2</figcaption>
+  </figure>
+
+  <figure style="display: inline-block; text-align: center; margin: 0 10px;">
+    <img src="B/results/1.2.2c1.png" width="150" alt="Campanile">
+    <figcaption>&sigma;=0.4</figcaption>
+  </figure>
+
+  <figure style="display: inline-block; text-align: center; margin: 0 10px;">
+    <img src="B/results/1.2.2d1.png" width="150" alt="Campanile">
+    <figcaption>&sigma;=0.5</figcaption>
+  </figure>
+
+  <figure style="display: inline-block; text-align: center; margin: 0 10px;">
+    <img src="B/results/1.2.2e1.png" width="150" alt="Campanile">
+    <figcaption>&sigma;=0.6</figcaption>
+  </figure>
+
+  <figure style="display: inline-block; text-align: center; margin: 0 10px;">
+    <img src="B/results/1.2.2f1.png" width="150" alt="Campanile">
+    <figcaption>&sigma;=0.8</figcaption>
+  </figure>
+
+  <figure style="display: inline-block; text-align: center; margin: 0 10px;">
+    <img src="B/results/1.2.2g1.png" width="150" alt="Campanile">
+    <figcaption>&sigma;=1.0</figcaption>
+  </figure>
+
+  <br>
+
+   <figure style="display: inline-block; text-align: center; margin: 0 10px;">
+    <img src="B/results/1.2.2a2.png" width="150" alt="Campanile">
+    <figcaption>Denoised</figcaption>
+  </figure>
+
+  <figure style="display: inline-block; text-align: center; margin: 0 10px;">
+    <img src="B/results/1.2.2b2.png" width="150" alt="Campanile">
+    <figcaption>Denoised</figcaption>
+  </figure>
+
+  <figure style="display: inline-block; text-align: center; margin: 0 10px;">
+    <img src="B/results/1.2.2c2.png" width="150" alt="Campanile">
+    <figcaption>Denoised</figcaption>
+  </figure>
+
+  <figure style="display: inline-block; text-align: center; margin: 0 10px;">
+    <img src="B/results/1.2.2d2.png" width="150" alt="Campanile">
+    <figcaption>Denoised</figcaption>
+  </figure>
+
+  <figure style="display: inline-block; text-align: center; margin: 0 10px;">
+    <img src="B/results/1.2.2e2.png" width="150" alt="Campanile">
+    <figcaption>Denoised</figcaption>
+  </figure>
+
+  <figure style="display: inline-block; text-align: center; margin: 0 10px;">
+    <img src="B/results/1.2.2f2.png" width="150" alt="Campanile">
+    <figcaption>Denoised</figcaption>
+  </figure>
+
+  <figure style="display: inline-block; text-align: center; margin: 0 10px;">
+    <img src="B/results/1.2.2g2.png" width="150" alt="Campanile">
+    <figcaption>Denoised</figcaption>
+  </figure>
+</div>
+
+<h3>1.2.3 Denoising Pure Noise</h3>
+
+Here is the training loss curve over time when training
+a U-Net on pure noise:
+
+  <div style="text-align: center;">
+    <figure style="display: inline-block; text-align: center; margin: 0 10px;">
+      <img src="B/results/1.2.3plot.png" width="1000" alt="Campanile">
+      <figcaption>Training Loss Over 5 Epochs</figcaption>
+    </figure>
+  </div>
+
+Here are examples of the model denoising pure noise after
+being trained for 1 epoch:
+
+  <div style="text-align: center;">
+    <figure style="display: inline-block; text-align: center; margin: 0 10px;">
+      <img src="B/results/1.2.3a1.png" width="150" alt="Campanile">
+      <figcaption>Sample 1</figcaption>
+    </figure>
+
+    <figure style="display: inline-block; text-align: center; margin: 0 10px;">
+      <img src="B/results/1.2.3a2.png" width="150" alt="Campanile">
+      <figcaption>Denoised</figcaption>
+    </figure>
+
+    <figure style="display: inline-block; text-align: center; margin: 0 10px;">
+      <img src="B/results/1.2.3b1.png" width="150" alt="Campanile">
+      <figcaption>Sample 2</figcaption>
+    </figure>
+
+    <figure style="display: inline-block; text-align: center; margin: 0 10px;">
+      <img src="B/results/1.2.3b2.png" width="150" alt="Campanile">
+      <figcaption>Denoised</figcaption>
+    </figure>
+
+    <figure style="display: inline-block; text-align: center; margin: 0 10px;">
+      <img src="B/results/1.2.3c1.png" width="150" alt="Campanile">
+      <figcaption>Sample 3</figcaption>
+    </figure>
+
+    <figure style="display: inline-block; text-align: center; margin: 0 10px;">
+      <img src="B/results/1.2.3c2.png" width="150" alt="Campanile">
+      <figcaption>Denoised</figcaption>
+    </figure>
+  </div>
+
+Here are examples of the model denoising pure noise after
+being trained for 5 epochs:
+
+  <div style="text-align: center;">
+  <figure style="display: inline-block; text-align: center; margin: 0 10px;">
+    <img src="B/results/1.2.3d1.png" width="150" alt="Campanile">
+    <figcaption>Sample 1</figcaption>
+  </figure>
+
+  <figure style="display: inline-block; text-align: center; margin: 0 10px;">
+    <img src="B/results/1.2.3d2.png" width="150" alt="Campanile">
+    <figcaption>Denoised</figcaption>
+  </figure>
+
+  <figure style="display: inline-block; text-align: center; margin: 0 10px;">
+    <img src="B/results/1.2.3e1.png" width="150" alt="Campanile">
+    <figcaption>Sample 2</figcaption>
+  </figure>
+
+  <figure style="display: inline-block; text-align: center; margin: 0 10px;">
+    <img src="B/results/1.2.3e2.png" width="150" alt="Campanile">
+    <figcaption>Denoised</figcaption>
+  </figure>
+
+  <figure style="display: inline-block; text-align: center; margin: 0 10px;">
+    <img src="B/results/1.2.3f1.png" width="150" alt="Campanile">
+    <figcaption>Sample 3</figcaption>
+  </figure>
+
+  <figure style="display: inline-block; text-align: center; margin: 0 10px;">
+    <img src="B/results/1.2.3f2.png" width="150" alt="Campanile">
+    <figcaption>Denoised</figcaption>
+  </figure>
+  </div>
+
+The generated images are similar, since the input doesn't
+give any meaningful signal to the model since it is pure noise.
+A pattern is that they all are white around the center and black
+near the borders. This is likely close the the mean of all
+images in the train set, since digits in the train set are
+relatively centered. This behavior happens because the input
+is not meaningful to the model, so its strategy for minimizing
+L2 loss is likely to generate the population mean since the input
+does not provide useful information.
+
+<h2>Part 2: Training a Flow Matching Model</h2>
+<h3>2.2 Training the UNet</h3>
+
+Here is the training loss curve over time when training
+a time-conditioned U-Net for 10 epochs. Batches are also smaller
+than before, so there are more batches overall:
+
+  <div style="text-align: center;">
+    <figure style="display: inline-block; text-align: center; margin: 0 10px;">
+      <img src="B/results/2.2plot.png" width="1000" alt="Campanile">
+      <figcaption>Training Loss Over 10 Epochs</figcaption>
+    </figure>
+  </div>
+
+<h3>2.3 Sampling from the UNet</h3>
+Here are samples from the UNet after 1, 5, and 10 training epochs. 
+Sampling was seeded with seed 0 for each generation, so 
+corresponding samples started from the same noise:
+
+  <div style="text-align: center;">
+    <figure style="display: inline-block; text-align: center; margin: 0 10px;">
+      <img src="B/results/2.3a.png" width="1000" alt="Campanile">
+      <figcaption>Samples after 1 Epoch</figcaption>
+    </figure>
+
+    <br>
+
+    <figure style="display: inline-block; text-align: center; margin: 0 10px;">
+      <img src="B/results/2.3b.png" width="1000" alt="Campanile">
+      <figcaption>Samples after 5 Epochs</figcaption>
+    </figure>
+
+    <br>
+
+    <figure style="display: inline-block; text-align: center; margin: 0 10px;">
+      <img src="B/results/2.3c.png" width="1000" alt="Campanile">
+      <figcaption>Samples after 10 Epochs</figcaption>
+    </figure>
+  </div>
+
+<h3>2.5 Training the UNet</h3>
+
+Here is the training loss curve over time when training
+a class-conditioned U-Net for 10 epochs. Batches are also smaller
+than before, so there are more batches overall:
+
+  <div style="text-align: center;">
+    <figure style="display: inline-block; text-align: center; margin: 0 10px;">
+      <img src="B/results/2.5plot.png" width="1000" alt="Campanile">
+      <figcaption>Training Loss Over 10 Epochs</figcaption>
+    </figure>
+  </div>
+
+<h3>2.6 Sampling from the UNet</h3>
+Here are samples from the UNet after 1, 5, and 10 training epochs. 
+Sampling was seeded with seed 0 for each generation, so 
+corresponding samples started from the same noise:
+
+  <div style="text-align: center;">
+    <figure style="display: inline-block; text-align: center; margin: 0 10px;">
+      <img src="B/results/2.6a1.png" width="1000" alt="Campanile">
+      <figcaption>Samples after 1 Epoch</figcaption>
+    </figure>
+
+    <br>
+
+    <figure style="display: inline-block; text-align: center; margin: 0 10px;">
+      <img src="B/results/2.6a2.png" width="1000" alt="Campanile">
+      <figcaption>Samples after 5 Epochs</figcaption>
+    </figure>
+
+    <br>
+
+    <figure style="display: inline-block; text-align: center; margin: 0 10px;">
+      <img src="B/results/2.6a3.png" width="1000" alt="Campanile">
+      <figcaption>Samples after 10 Epochs</figcaption>
+    </figure>
+  </div>
+
+After removing the scheduler, I changed the learning rate
+from 1e-2 to 1e-3, since the scheduler previously decreased
+the learning rate over time. The training loss over time is 
+shown below:
+
+  <div style="text-align: center;">
+    <figure style="display: inline-block; text-align: center; margin: 0 10px;">
+      <img src="B/results/2.6plot.png" width="1000" alt="Campanile">
+      <figcaption>Training Loss Over 10 Epochs</figcaption>
+    </figure>
+  </div>
+
+Samples after 1, 5, and 10 epochs from this model are
+shown below:
+
+  <div style="text-align: center;">
+    <figure style="display: inline-block; text-align: center; margin: 0 10px;">
+      <img src="B/results/2.6b1.png" width="1000" alt="Campanile">
+      <figcaption>Samples after 1 Epoch</figcaption>
+    </figure>
+
+    <br>
+
+    <figure style="display: inline-block; text-align: center; margin: 0 10px;">
+      <img src="B/results/2.6b2.png" width="1000" alt="Campanile">
+      <figcaption>Samples after 5 Epochs</figcaption>
+    </figure>
+
+    <br>
+
+    <figure style="display: inline-block; text-align: center; margin: 0 10px;">
+      <img src="B/results/2.6b3.png" width="1000" alt="Campanile">
+      <figcaption>Samples after 10 Epochs</figcaption>
+    </figure>
+  </div>
+
 </body>
 </html>
